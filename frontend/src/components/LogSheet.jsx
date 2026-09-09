@@ -62,39 +62,45 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
   };
 
   return (
-    <div className="glass-card p-6 shadow-2xl animate-fade-in-delay-2">
+    <div className="glass-card animate-fade-in-delay-2">
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+      <div className="header-top mb-6">
         <div>
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-400" />
+          <h2 className="text-h2 flex items-center gap-2">
+            <FileText size={20} className="text-warning" />
             Daily ELD Log Sheets
           </h2>
-          <p className="text-sm text-gray-400 mt-0.5">
+          <p className="text-sm text-muted mt-1">
             Each day of your trip gets its own 24-hour log — just like the official FMCSA paper form.
           </p>
         </div>
 
         {/* Day Navigation */}
-        <div className="flex items-center gap-2 bg-gray-900/80 p-1.5 rounded-xl border border-gray-800">
+        <div className="flex items-center gap-2 p-2" style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
           <button
             disabled={selectedDayIndex === 0}
             onClick={() => setSelectedDayIndex((prev) => Math.max(0, prev - 1))}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+            style={{ padding: '6px', borderRadius: '8px', cursor: selectedDayIndex === 0 ? 'not-allowed' : 'pointer', opacity: selectedDayIndex === 0 ? 0.3 : 1, background: 'transparent', border: 'none', color: 'var(--text-muted)' }}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft size={16} />
           </button>
 
-          <div className="flex items-center gap-1 overflow-x-auto">
+          <div className="flex items-center gap-1" style={{ overflowX: 'auto' }}>
             {dailyLogs.map((log, idx) => (
               <button
                 key={log.date}
                 onClick={() => setSelectedDayIndex(idx)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap ${
-                  selectedDayIndex === idx
-                    ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 font-bold'
-                    : 'text-gray-400 hover:text-white hover:bg-gray-800'
-                }`}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '0.75rem',
+                  fontWeight: selectedDayIndex === idx ? 'bold' : '500',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: selectedDayIndex === idx ? 'var(--accent)' : 'transparent',
+                  color: selectedDayIndex === idx ? '#fff' : 'var(--text-muted)'
+                }}
               >
                 Day {log.day_number}
               </button>
@@ -104,9 +110,9 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
           <button
             disabled={selectedDayIndex === dailyLogs.length - 1}
             onClick={() => setSelectedDayIndex((prev) => Math.min(dailyLogs.length - 1, prev + 1))}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition"
+            style={{ padding: '6px', borderRadius: '8px', cursor: selectedDayIndex === dailyLogs.length - 1 ? 'not-allowed' : 'pointer', opacity: selectedDayIndex === dailyLogs.length - 1 ? 0.3 : 1, background: 'transparent', border: 'none', color: 'var(--text-muted)' }}
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
@@ -114,46 +120,47 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
       {/* How to Read button */}
       <button
         onClick={() => setShowHelp(!showHelp)}
-        className="mb-4 text-xs text-gray-400 hover:text-white flex items-center gap-1.5 transition"
+        className="mb-4 text-xs flex items-center gap-1"
+        style={{ color: 'var(--text-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
       >
-        <HelpCircle className="w-3.5 h-3.5" />
+        <HelpCircle size={14} />
         {showHelp ? 'Hide guide' : 'How to read this chart'}
       </button>
 
       {showHelp && (
-        <div className="mb-4 bg-gray-900/80 border border-gray-700 rounded-xl p-4 text-xs text-gray-300 space-y-2">
-          <p className="font-semibold text-white">Reading the Log Grid:</p>
-          <p>The chart shows 24 hours (midnight to midnight) across the top. The <span className="text-emerald-400 font-semibold">green line</span> moves between four rows to show what the driver was doing at each hour:</p>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-blue-500/30 border border-blue-500/40"></span> <span><strong className="text-blue-400">Off Duty</strong> — Not working, resting</span></div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-purple-500/30 border border-purple-500/40"></span> <span><strong className="text-purple-400">Sleeper</strong> — In sleeper berth</span></div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-emerald-500/30 border border-emerald-500/40"></span> <span><strong className="text-emerald-400">Driving</strong> — Behind the wheel</span></div>
-            <div className="flex items-center gap-2"><span className="w-3 h-3 rounded-sm bg-amber-500/30 border border-amber-500/40"></span> <span><strong className="text-amber-400">On Duty</strong> — Working but not driving (loading, fueling, etc.)</span></div>
+        <div className="mb-4 text-xs space-y-2 p-4" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '12px', color: 'var(--text-main)' }}>
+          <p className="font-bold">Reading the Log Grid:</p>
+          <p className="mt-1 mb-2">The chart shows 24 hours (midnight to midnight) across the top. The <span style={{ color: 'var(--accent-light)', fontWeight: 'bold' }}>green line</span> moves between four rows to show what the driver was doing at each hour:</p>
+          <div className="grid-3 mt-2">
+            <div className="flex items-center gap-2"><span style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'rgba(59,130,246,0.3)', border: '1px solid rgba(59,130,246,0.4)' }}></span> <span><strong style={{ color: '#60a5fa' }}>Off Duty</strong> — Not working, resting</span></div>
+            <div className="flex items-center gap-2"><span style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'rgba(139,92,246,0.3)', border: '1px solid rgba(139,92,246,0.4)' }}></span> <span><strong style={{ color: '#c084fc' }}>Sleeper</strong> — In sleeper berth</span></div>
+            <div className="flex items-center gap-2"><span style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'var(--accent-dim)', border: '1px solid var(--accent)' }}></span> <span><strong style={{ color: 'var(--accent-light)' }}>Driving</strong> — Behind the wheel</span></div>
+            <div className="flex items-center gap-2"><span style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'rgba(245,158,11,0.3)', border: '1px solid rgba(245,158,11,0.4)' }}></span> <span><strong style={{ color: '#fbbf24' }}>On Duty</strong> — Working but not driving</span></div>
           </div>
           <p className="mt-2">The <strong>TOTAL</strong> column on the right shows how many hours were spent in each status. All four rows always add up to exactly <strong>24.0 hours</strong>.</p>
         </div>
       )}
 
       {/* Day Metadata Bar */}
-      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-4 mb-4 flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+      <div className="flex flex-wrap items-center gap-5 p-4 mb-4 text-sm" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
         <div>
-          <span className="text-gray-500 text-xs">Date</span>
-          <div className="font-mono font-bold text-emerald-400">{date}</div>
+          <span className="text-xs text-muted">Date</span>
+          <div className="font-mono font-bold text-accent">{date}</div>
         </div>
         <div>
-          <span className="text-gray-500 text-xs">Day</span>
-          <div className="font-bold text-white">{day_number} of {dailyLogs.length}</div>
+          <span className="text-xs text-muted">Day</span>
+          <div className="font-bold">{day_number} of {dailyLogs.length}</div>
         </div>
         <div>
-          <span className="text-gray-500 text-xs">Cycle Hours Used</span>
-          <div className="font-mono font-bold text-cyan-400">{cycle_hours_end_of_day} / 70.0h</div>
+          <span className="text-xs text-muted">Cycle Hours Used</span>
+          <div className="font-mono font-bold" style={{ color: '#06b6d4' }}>{cycle_hours_end_of_day} / 70.0h</div>
         </div>
       </div>
 
       {/* SVG 24-Hour FMCSA Grid */}
-      <div className="overflow-x-auto bg-gray-950/80 p-4 rounded-xl border border-gray-800 mb-6">
-        <svg viewBox="0 0 790 230" className="w-full min-w-[700px] h-auto select-none">
-          <rect x="0" y="0" width="790" height="230" fill="#0a0f1a" rx="8" />
+      <div className="mb-6 p-4" style={{ overflowX: 'auto', background: 'var(--bg-base)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+        <svg viewBox="0 0 790 230" style={{ width: '100%', minWidth: '700px', height: 'auto', userSelect: 'none' }}>
+          <rect x="0" y="0" width="790" height="230" fill="var(--bg-base)" rx="8" />
 
           {/* Row Labels */}
           <g>
@@ -171,11 +178,11 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
 
           {/* Horizontal Grid Rows */}
           {[40, 85, 130, 175].map((y, idx) => (
-            <line key={idx} x1={gridLeft} y1={y} x2={gridLeft + gridWidth} y2={y} stroke="#1e293b" strokeWidth="1" />
+            <line key={idx} x1={gridLeft} y1={y} x2={gridLeft + gridWidth} y2={y} stroke="var(--bg-hover)" strokeWidth="1" />
           ))}
           {/* Top and bottom borders */}
-          <line x1={gridLeft} y1="20" x2={gridLeft + gridWidth} y2="20" stroke="#1e293b" strokeWidth="1" />
-          <line x1={gridLeft} y1="195" x2={gridLeft + gridWidth} y2="195" stroke="#1e293b" strokeWidth="1" />
+          <line x1={gridLeft} y1="20" x2={gridLeft + gridWidth} y2="20" stroke="var(--bg-hover)" strokeWidth="1" />
+          <line x1={gridLeft} y1="195" x2={gridLeft + gridWidth} y2="195" stroke="var(--bg-hover)" strokeWidth="1" />
 
           {/* Hour Labels & Vertical Grid Lines */}
           {Array.from({ length: 25 }).map((_, i) => {
@@ -187,15 +194,15 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
 
             return (
               <g key={i}>
-                <line x1={x} y1="20" x2={x} y2="195" stroke={i % 6 === 0 ? "#334155" : "#1e293b"} strokeWidth={i % 6 === 0 ? "1.5" : "0.8"} />
-                <text x={x} y="14" textAnchor="middle" fill={i % 6 === 0 ? "#e2e8f0" : "#64748b"} fontSize="9" fontWeight={i % 6 === 0 ? "700" : "500"} fontFamily="Inter, sans-serif">
+                <line x1={x} y1="20" x2={x} y2="195" stroke={i % 6 === 0 ? "rgba(255,255,255,0.2)" : "var(--bg-hover)"} strokeWidth={i % 6 === 0 ? "1.5" : "0.8"} />
+                <text x={x} y="14" textAnchor="middle" fill={i % 6 === 0 ? "var(--text-main)" : "var(--text-muted)"} fontSize="9" fontWeight={i % 6 === 0 ? "700" : "500"} fontFamily="Inter, sans-serif">
                   {label}
                 </text>
                 {/* 15-min ticks */}
                 {i < 24 && [1, 2, 3].map((t) => {
                   const tickX = x + (t * (hourWidth / 4));
                   return (
-                    <line key={t} x1={tickX} y1="20" x2={tickX} y2="195" stroke="#111827" strokeWidth="0.5" strokeDasharray="2 3" />
+                    <line key={t} x1={tickX} y1="20" x2={tickX} y2="195" stroke="var(--bg-hover)" strokeWidth="0.5" strokeDasharray="2 3" />
                   );
                 })}
               </g>
@@ -205,36 +212,36 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
           {/* Stepped Duty Status Line */}
           {dutyPathD && (
             <>
-              <path d={dutyPathD} fill="none" stroke="#10b981" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.25" />
-              <path d={dutyPathD} fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d={dutyPathD} fill="none" stroke="var(--accent)" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" opacity="0.25" />
+              <path d={dutyPathD} fill="none" stroke="var(--accent-light)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </>
           )}
 
           {/* Right Summary Total Box */}
           <g transform={`translate(${gridLeft + gridWidth + 12}, 0)`}>
-            <rect x="0" y="20" width="55" height="175" fill="#111827" stroke="#1e293b" rx="6" />
-            <text x="27.5" y="14" textAnchor="middle" fill="#94a3b8" fontSize="9" fontWeight="bold" fontFamily="Inter, sans-serif">TOTAL</text>
+            <rect x="0" y="20" width="55" height="175" fill="var(--bg-input)" stroke="var(--border-color)" rx="6" />
+            <text x="27.5" y="14" textAnchor="middle" fill="var(--text-muted)" fontSize="9" fontWeight="bold" fontFamily="Inter, sans-serif">TOTAL</text>
             
             <text x="27.5" y="45" textAnchor="middle" fill="#60a5fa" fontSize="12" fontWeight="bold" fontFamily="JetBrains Mono, monospace">{totals.off_duty || 0}</text>
             <text x="27.5" y="90" textAnchor="middle" fill="#c084fc" fontSize="12" fontWeight="bold" fontFamily="JetBrains Mono, monospace">{totals.sleeper || 0}</text>
             <text x="27.5" y="135" textAnchor="middle" fill="#34d399" fontSize="12" fontWeight="bold" fontFamily="JetBrains Mono, monospace">{totals.driving || 0}</text>
             <text x="27.5" y="180" textAnchor="middle" fill="#fbbf24" fontSize="12" fontWeight="bold" fontFamily="JetBrains Mono, monospace">{totals.on_duty_not_driving || 0}</text>
             
-            <line x1="8" y1="195" x2="47" y2="195" stroke="#374151" strokeWidth="1.5" />
+            <line x1="8" y1="195" x2="47" y2="195" stroke="var(--border-color)" strokeWidth="1.5" />
             <text x="27.5" y="212" textAnchor="middle" fill="#ffffff" fontSize="12" fontWeight="bold" fontFamily="JetBrains Mono, monospace">24.0</text>
           </g>
         </svg>
       </div>
 
       {/* Daily Hours Summary Cards */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid-3 mb-6">
         {Object.entries(STATUS_COLORS).map(([key, config]) => {
           const hours = totals[key] || 0;
           return (
-            <div key={key} className="bg-gray-900/60 border border-gray-800 rounded-xl p-3 text-center">
-              <div className="text-lg mb-0.5">{config.emoji}</div>
-              <div className="text-xl font-bold font-mono" style={{ color: config.line }}>{hours}h</div>
-              <div className="text-[11px] text-gray-400 mt-0.5">{config.label}</div>
+            <div key={key} className="text-center p-3" style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
+              <div className="mb-1" style={{ fontSize: '1.25rem' }}>{config.emoji}</div>
+              <div className="font-bold font-mono" style={{ color: config.line, fontSize: '1.25rem' }}>{hours}h</div>
+              <div className="text-xs text-muted mt-1">{config.label}</div>
             </div>
           );
         })}
@@ -242,44 +249,44 @@ export default function LogSheet({ dailyLogs, tripInputs, summary }) {
 
       {/* Activity Timeline Table */}
       <div>
-        <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-          <Info className="w-4 h-4 text-cyan-400" />
+        <h3 className="text-sm font-bold mb-3 flex items-center gap-2">
+          <Info size={16} className="text-accent" />
           Day {day_number} Activity Timeline
         </h3>
         
-        <div className="overflow-x-auto rounded-xl border border-gray-800">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-900/90 text-gray-400 border-b border-gray-800 text-xs">
+        <div style={{ overflowX: 'auto', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+          <table style={{ width: '100%', textAlign: 'left', fontSize: '0.875rem', borderCollapse: 'collapse' }}>
+            <thead style={{ background: 'var(--bg-input)', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
               <tr>
-                <th className="p-3 font-medium">Time</th>
-                <th className="p-3 font-medium">Status</th>
-                <th className="p-3 font-medium">Duration</th>
-                <th className="p-3 font-medium">Activity</th>
+                <th style={{ padding: '12px', fontWeight: '500', borderBottom: '1px solid var(--border-color)' }}>Time</th>
+                <th style={{ padding: '12px', fontWeight: '500', borderBottom: '1px solid var(--border-color)' }}>Status</th>
+                <th style={{ padding: '12px', fontWeight: '500', borderBottom: '1px solid var(--border-color)' }}>Duration</th>
+                <th style={{ padding: '12px', fontWeight: '500', borderBottom: '1px solid var(--border-color)' }}>Activity</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/50">
+            <tbody>
               {segments.map((seg, i) => {
-                let badgeClass = 'badge-off-duty';
-                if (seg.status === 'driving') badgeClass = 'badge-driving';
-                if (seg.status === 'on_duty_not_driving') badgeClass = 'badge-on-duty';
-                if (seg.status === 'sleeper') badgeClass = 'badge-sleeper';
+                let badgeStyle = { background: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.25)' };
+                if (seg.status === 'driving') badgeStyle = { background: 'var(--accent-dim)', color: 'var(--accent-light)', border: '1px solid var(--accent-dim)' };
+                if (seg.status === 'on_duty_not_driving') badgeStyle = { background: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.25)' };
+                if (seg.status === 'sleeper') badgeStyle = { background: 'rgba(139,92,246,0.15)', color: '#c084fc', border: '1px solid rgba(139,92,246,0.25)' };
 
                 const config = STATUS_COLORS[seg.status] || STATUS_COLORS.off_duty;
 
                 return (
-                  <tr key={i} className="hover:bg-gray-800/30 transition">
-                    <td className="p-3 text-gray-300 font-mono text-xs whitespace-nowrap">
+                  <tr key={i} style={{ borderBottom: i === segments.length - 1 ? 'none' : '1px solid var(--border-color)' }}>
+                    <td className="font-mono text-xs" style={{ padding: '12px', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
                       {seg.start_time} – {seg.end_time}
                     </td>
-                    <td className="p-3">
-                      <span className={badgeClass}>
-                        {config.emoji} {config.label}
+                    <td style={{ padding: '12px' }}>
+                      <span className="badge" style={badgeStyle}>
+                        {config.emoji} <span style={{ marginLeft: '4px' }}>{config.label}</span>
                       </span>
                     </td>
-                    <td className="p-3 font-mono text-sm font-semibold" style={{ color: config.line }}>
+                    <td className="font-mono text-sm font-bold" style={{ padding: '12px', color: config.line }}>
                       {seg.duration_hrs}h
                     </td>
-                    <td className="p-3 text-gray-300 text-xs">
+                    <td className="text-xs" style={{ padding: '12px', color: 'var(--text-main)' }}>
                       {friendlyName(seg)}
                     </td>
                   </tr>
