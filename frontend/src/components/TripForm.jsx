@@ -31,18 +31,18 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
   const cycleRemaining = Math.max(0, 70 - cycleHours);
 
   return (
-    <div className="glass-card p-6 shadow-2xl">
+    <div className="glass-card">
       {/* Section Title */}
       <div className="mb-6">
-        <h2 className="text-lg font-bold text-white mb-1">Plan Your Trip</h2>
-        <p className="text-sm text-gray-400">
+        <h2 className="text-h2 mb-1">Plan Your Trip</h2>
+        <p className="text-sm text-muted">
           Enter your locations and we'll calculate the best route with all required stops.
         </p>
       </div>
 
       {/* Quick Fill Presets */}
       <div className="mb-6">
-        <p className="text-xs text-gray-500 font-medium mb-2 uppercase tracking-wider">Try an example route:</p>
+        <p className="form-label tracking-wider uppercase text-xs">Try an example route:</p>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -68,14 +68,14 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* Location Inputs with visual flow */}
-        <div className="space-y-3">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Route Locations</p>
+        <div className="flex flex-col gap-3">
+          <p className="form-label tracking-wider uppercase text-xs">Route Locations</p>
           
           {/* Current Location */}
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1.5">
+            <label className="form-label">
               📍 Where are you now?
             </label>
             <input
@@ -86,19 +86,19 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
               value={currentLocation}
               onChange={(e) => setCurrentLocation(e.target.value)}
             />
-            <p className="helper-text">Your current truck location or starting point</p>
+            <p className="form-helper">Your current truck location or starting point</p>
           </div>
 
           {/* Arrow Down */}
           <div className="flex justify-center">
-            <div className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-              <ArrowDown className="w-4 h-4 text-cyan-400" />
+            <div className="icon-container icon-small">
+              <ArrowDown size={16} />
             </div>
           </div>
 
           {/* Pickup */}
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1.5">
+            <label className="form-label">
               📦 Pickup Location
             </label>
             <input
@@ -109,19 +109,19 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
               value={pickupLocation}
               onChange={(e) => setPickupLocation(e.target.value)}
             />
-            <p className="helper-text">Where you'll load cargo (1 hour on-duty time added)</p>
+            <p className="form-helper">Where you'll load cargo (1 hour on-duty time added)</p>
           </div>
 
           {/* Arrow Down */}
           <div className="flex justify-center">
-            <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <ArrowDown className="w-4 h-4 text-amber-400" />
+            <div className="icon-container icon-small">
+              <ArrowDown size={16} />
             </div>
           </div>
 
           {/* Dropoff */}
           <div>
-            <label className="block text-sm font-medium text-gray-200 mb-1.5">
+            <label className="form-label">
               🏁 Dropoff Location
             </label>
             <input
@@ -132,26 +132,26 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
               value={dropoffLocation}
               onChange={(e) => setDropoffLocation(e.target.value)}
             />
-            <p className="helper-text">Final delivery destination (1 hour on-duty time added)</p>
+            <p className="form-helper">Final delivery destination (1 hour on-duty time added)</p>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-800" />
+        <div style={{ borderTop: '1px solid var(--border-color)', margin: '8px 0' }} />
 
         {/* Cycle Hours */}
         <div>
           <div className="flex items-start justify-between mb-2">
             <div>
-              <label className="text-sm font-medium text-gray-200 flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-emerald-400" />
+              <label className="form-label flex items-center gap-1">
+                <Clock size={16} className="text-accent" />
                 Current Cycle Hours Used
               </label>
-              <p className="helper-text mt-0.5">How many hours you've been on-duty in the last 8 days</p>
+              <p className="form-helper mt-1">How many hours you've been on-duty in the last 8 days</p>
             </div>
             <div className="text-right">
-              <span className="text-lg font-mono font-bold text-emerald-400">{cycleHours}h</span>
-              <span className="text-xs text-gray-500 block">{cycleRemaining}h remaining</span>
+              <span className="text-h1 text-accent font-mono" style={{ fontSize: '1.25rem' }}>{cycleHours}h</span>
+              <span className="text-xs text-muted block">{cycleRemaining}h remaining</span>
             </div>
           </div>
 
@@ -161,8 +161,6 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
               min="0"
               max="70"
               step="0.5"
-              className="w-full accent-emerald-500 h-2 rounded-lg cursor-pointer"
-              style={{ background: `linear-gradient(to right, #10b981 ${(cycleHours/70)*100}%, #1e293b ${(cycleHours/70)*100}%)` }}
               value={cycleHours}
               onChange={(e) => setCycleHours(parseFloat(e.target.value))}
             />
@@ -171,17 +169,20 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
               min="0"
               max="70"
               step="0.5"
-              className="glass-input w-20 text-center font-mono text-sm"
+              className="glass-input text-center font-mono text-sm"
+              style={{ width: '80px' }}
               value={cycleHours}
               onChange={(e) => setCycleHours(Math.max(0, Math.min(70, parseFloat(e.target.value) || 0)))}
             />
           </div>
 
           {cycleHours > 55 && (
-            <div className="mt-3 text-xs text-amber-300 flex items-start gap-2 bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold">Heads up:</span> With {cycleHours}h used, you only have {cycleRemaining}h left before a mandatory 34-hour restart is required.
+            <div className="alert alert-warning mt-3">
+              <div className="flex gap-2">
+                <AlertTriangle size={16} className="flex-shrink-0 mt-1" />
+                <div>
+                  <span className="font-bold">Heads up:</span> With {cycleHours}h used, you only have {cycleRemaining}h left before a mandatory 34-hour restart is required.
+                </div>
               </div>
             </div>
           )}
@@ -189,7 +190,7 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
 
         {/* Start Time */}
         <div>
-          <label className="block text-sm font-medium text-gray-200 mb-1.5">
+          <label className="form-label">
             🕐 When do you want to depart?
           </label>
           <input
@@ -198,23 +199,24 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
           />
-          <p className="helper-text">The log sheets will start from this date and time</p>
+          <p className="form-helper">The log sheets will start from this date and time</p>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
           disabled={isLoading}
-          className="btn-primary w-full py-4 text-base font-bold mt-2"
+          className="btn-primary mt-2"
+          style={{ padding: '16px' }}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className="spinner" />
               <span>Calculating route & generating logs...</span>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-2">
-              <Play className="w-5 h-5 fill-white" />
+              <Play size={20} fill="currentColor" />
               <span>Plan Trip & Generate Logs</span>
             </div>
           )}

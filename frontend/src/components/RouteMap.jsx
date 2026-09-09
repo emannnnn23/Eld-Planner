@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -68,15 +68,30 @@ function FitBounds({ geometry }) {
 }
 
 export default function RouteMap({ route, stops }) {
+  const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
   if (!route || !route.geometry || route.geometry.length === 0) {
     return (
-      <div className="glass-card h-[450px] flex items-center justify-center">
-        <div className="text-center p-8">
-          <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto mb-4">
-            <Map className="w-8 h-8 text-cyan-400" />
+      <div className="glass-card flex items-center justify-center" style={{ height: '450px' }}>
+        <div className="text-center p-5">
+          <div className="icon-container mx-auto mb-4" style={{ width: '64px', height: '64px', borderRadius: '16px' }}>
+            <Map size={32} />
           </div>
-          <h3 className="text-white font-semibold mb-1">Your Route Map</h3>
-          <p className="text-sm text-gray-400 max-w-xs">
+          <h3 className="text-h2 mb-1">Your Route Map</h3>
+          <p className="text-sm text-muted max-w-xs mx-auto">
             Enter your trip details on the left and click "Plan Trip" to see your route with all stops plotted here.
           </p>
         </div>
@@ -86,26 +101,30 @@ export default function RouteMap({ route, stops }) {
 
   const centerLat = route.geometry[0][0];
   const centerLng = route.geometry[0][1];
+  
+  const tileUrl = theme === 'light' 
+    ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
   return (
-    <div className="glass-card p-4 shadow-2xl animate-fade-in-delay">
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h3 className="text-base font-semibold text-white flex items-center gap-2">
-          <Map className="w-5 h-5 text-cyan-400" />
+    <div className="glass-card animate-fade-in-delay">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-h2 flex items-center gap-2">
+          <Map size={20} className="text-accent" />
           <span>Route Map</span>
         </h3>
-        <div className="flex items-center gap-3 text-[11px] text-gray-400">
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" /> Start / Drop
+        <div className="flex items-center gap-3 text-xs text-muted">
+          <span className="flex items-center gap-1">
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981' }} /> Start / Drop
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" /> Pickup
+          <span className="flex items-center gap-1">
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#06b6d4' }} /> Pickup
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-400" /> Fuel
+          <span className="flex items-center gap-1">
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b' }} /> Fuel
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-purple-400" /> Rest
+          <span className="flex items-center gap-1">
+            <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8b5cf6' }} /> Rest
           </span>
         </div>
       </div>
@@ -114,18 +133,19 @@ export default function RouteMap({ route, stops }) {
         center={[centerLat, centerLng]}
         zoom={6}
         scrollWheelZoom={true}
-        className="rounded-xl overflow-hidden border border-gray-800"
+        className="map-container"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          key={tileUrl}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          url={tileUrl}
         />
 
         <FitBounds geometry={route.geometry} />
 
         <Polyline
           positions={route.geometry}
-          pathOptions={{ color: '#06b6d4', weight: 4, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }}
+          pathOptions={{ color: 'var(--accent)', weight: 4, opacity: 0.85, lineCap: 'round', lineJoin: 'round' }}
         />
 
         {stops && stops.map((stop, idx) => {
@@ -136,17 +156,17 @@ export default function RouteMap({ route, stops }) {
           return (
             <Marker key={idx} position={[stop.lat, stop.lng]} icon={icon}>
               <Popup>
-                <div className="p-1 min-w-[220px]">
-                  <div className="font-bold text-sm text-gray-900 border-b border-gray-200 pb-1.5 mb-1.5">
+                <div style={{ padding: '4px', minWidth: '220px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '6px' }}>
                     {typeLabel}
                   </div>
-                  <div className="text-xs text-gray-600 font-medium mb-1.5">{stop.location}</div>
-                  <div className="text-[11px] text-gray-500 space-y-1">
-                    <div>📅 <span className="font-semibold text-gray-700">Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
-                    <div>🚀 <span className="font-semibold text-gray-700">Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
+                  <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '6px' }}>{stop.location}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+                    <div>📅 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
+                    <div>🚀 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
                   </div>
                   {stop.description && (
-                    <div className="text-[11px] text-emerald-700 font-medium mt-1.5 bg-emerald-50 rounded px-2 py-1">
+                    <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: '500', marginTop: '6px', background: 'var(--accent-dim)', borderRadius: '4px', padding: '4px 8px' }}>
                       {stop.description}
                     </div>
                   )}
