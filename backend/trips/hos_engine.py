@@ -1,10 +1,53 @@
 import datetime
+import math
 from datetime import timedelta, datetime as dt
 
 STATUS_OFF_DUTY = "off_duty"
 STATUS_SLEEPER = "sleeper"
 STATUS_DRIVING = "driving"
 STATUS_ON_DUTY = "on_duty_not_driving"
+
+
+def interpolate_along_coords(coords, fraction):
+    """
+    Get approximate [lat, lng] at a given fraction (0.0 to 1.0) along a polyline.
+    Uses cumulative segment distances for accuracy.
+    """
+    if not coords or len(coords) < 2:
+        return None, None
+    if fraction <= 0:
+        return coords[0][0], coords[0][1]
+    if fraction >= 1.0:
+        return coords[-1][0], coords[-1][1]
+
+    # Calculate cumulative distances along the polyline
+    distances = [0.0]
+    for i in range(1, len(coords)):
+        dlat = coords[i][0] - coords[i - 1][0]
+        dlng = coords[i][1] - coords[i - 1][1]
+        dist = math.sqrt(dlat * dlat + dlng * dlng)
+        distances.append(distances[-1] + dist)
+
+    total_dist = distances[-1]
+    if total_dist < 1e-9:
+        return coords[0][0], coords[0][1]
+
+    target_dist = fraction * total_dist
+
+    # Find the segment containing target_dist
+    for i in range(1, len(distances)):
+        if distances[i] >= target_dist:
+            seg_start_dist = distances[i - 1]
+            seg_len = distances[i] - seg_start_dist
+            if seg_len < 1e-9:
+                return coords[i][0], coords[i][1]
+            seg_frac = (target_dist - seg_start_dist) / seg_len
+            lat = coords[i - 1][0] + seg_frac * (coords[i][0] - coords[i - 1][0])
+            lng = coords[i - 1][1] + seg_frac * (coords[i][1] - coords[i - 1][1])
+            return round(lat, 6), round(lng, 6)
+
+    return coords[-1][0], coords[-1][1]
+
 
 def simulate_hos_trip(
     current_location,
@@ -77,14 +120,29 @@ def simulate_hos_trip(
         })
         return start_dt, end_dt
 
+    def get_stop_coords(leg_duration, remaining_hrs, coords, start_loc, end_loc):
+        """Calculate interpolated lat/lng along the route based on progress."""
+        if coords and len(coords) >= 2 and leg_duration > 0:
+            driven = leg_duration - remaining_hrs
+            fraction = max(0.0, min(1.0, driven / leg_duration))
+            lat, lng = interpolate_along_coords(coords, fraction)
+            if lat is not None:
+                return lat, lng
+        # Fallback: average of start and end
+        return start_loc.get("lat"), start_loc.get("lng")
+
     # Process drive leg helper
     def drive_leg(leg_distance, leg_duration, speed, leg_name, start_loc, end_loc, coords=None):
         nonlocal drive_time_shift, duty_window_shift, drive_time_since_break, cycle_hours, miles_since_fuel
         
         remaining_hrs = float(leg_duration)
         remaining_miles = float(leg_distance)
+        total_leg_hrs = float(leg_duration)
         
         while remaining_hrs > 0.0001:
+            # Get interpolated position for any stops at this point
+            stop_lat, stop_lng = get_stop_coords(total_leg_hrs, remaining_hrs, coords, start_loc, end_loc)
+
             # Check mandatory rest / resets before driving
             
             # 1. 70-Hour Cycle Cap -> 34-Hour Restart
@@ -92,15 +150,15 @@ def simulate_hos_trip(
                 s_dt, e_dt = record_event(
                     STATUS_OFF_DUTY, 34.0, "34-Hour Cycle Restart",
                     f"Rest Area en route to {end_loc['name']}",
-                    lat=start_loc.get("lat"), lng=start_loc.get("lng")
+                    lat=stop_lat, lng=stop_lng
                 )
                 stops.append({
                     "type": "restart_34hr",
                     "location": f"34-Hr Restart (near {end_loc['name']})",
                     "arrive": s_dt.isoformat(),
                     "depart": e_dt.isoformat(),
-                    "lat": start_loc.get("lat"),
-                    "lng": start_loc.get("lng"),
+                    "lat": stop_lat,
+                    "lng": stop_lng,
                     "description": "Required 34-hour off-duty cycle restart (hit 70hr limit)"
                 })
                 cycle_hours = 0.0
@@ -109,21 +167,21 @@ def simulate_hos_trip(
                 drive_time_since_break = 0.0
                 continue
 
-            # 2. 11-Hour Drive Limit or 14-Hour Duty Window -> 10-Hour Shift Reset
+            # 2. 11-Hour Drive Limit or 14-Hour Duty Window -> 10-Hour Shift Reset (Sleeper Berth)
             if drive_time_shift >= 11.0 or duty_window_shift >= 14.0:
                 s_dt, e_dt = record_event(
-                    STATUS_OFF_DUTY, 10.0, "10-Hour Shift Reset",
+                    STATUS_SLEEPER, 10.0, "10-Hour Sleeper Berth Reset",
                     f"Truck Stop / Rest Area en route to {end_loc['name']}",
-                    lat=start_loc.get("lat"), lng=start_loc.get("lng")
+                    lat=stop_lat, lng=stop_lng
                 )
                 stops.append({
                     "type": "reset_10hr",
-                    "location": f"10-Hr Reset Stop (en route to {end_loc['name']})",
+                    "location": f"10-Hr Sleeper Berth Reset (en route to {end_loc['name']})",
                     "arrive": s_dt.isoformat(),
                     "depart": e_dt.isoformat(),
-                    "lat": start_loc.get("lat"),
-                    "lng": start_loc.get("lng"),
-                    "description": "Required 10-hour off-duty shift reset (11h drive / 14h window limit)"
+                    "lat": stop_lat,
+                    "lng": stop_lng,
+                    "description": "Required 10-hour sleeper berth reset (11h drive / 14h window limit)"
                 })
                 drive_time_shift = 0.0
                 duty_window_shift = 0.0
@@ -135,15 +193,15 @@ def simulate_hos_trip(
                 s_dt, e_dt = record_event(
                     STATUS_OFF_DUTY, 0.5, "30-Minute Rest Break",
                     f"Rest Stop en route to {end_loc['name']}",
-                    lat=start_loc.get("lat"), lng=start_loc.get("lng")
+                    lat=stop_lat, lng=stop_lng
                 )
                 stops.append({
                     "type": "break_30min",
                     "location": f"30-Min Break (en route to {end_loc['name']})",
                     "arrive": s_dt.isoformat(),
                     "depart": e_dt.isoformat(),
-                    "lat": start_loc.get("lat"),
-                    "lng": start_loc.get("lng"),
+                    "lat": stop_lat,
+                    "lng": stop_lng,
                     "description": "Required 30-minute break after 8 hours driving"
                 })
                 duty_window_shift += 0.5
@@ -163,15 +221,15 @@ def simulate_hos_trip(
                 s_dt, e_dt = record_event(
                     STATUS_ON_DUTY, 0.5, "Fuel Stop",
                     f"Fuel Plaza en route to {end_loc['name']}",
-                    lat=start_loc.get("lat"), lng=start_loc.get("lng")
+                    lat=stop_lat, lng=stop_lng
                 )
                 stops.append({
                     "type": "fuel",
                     "location": f"Fuel Plaza (1,000-mi interval)",
                     "arrive": s_dt.isoformat(),
                     "depart": e_dt.isoformat(),
-                    "lat": start_loc.get("lat"),
-                    "lng": start_loc.get("lng"),
+                    "lat": stop_lat,
+                    "lng": stop_lng,
                     "description": "30-minute on-duty fueling stop"
                 })
                 duty_window_shift += 0.5
@@ -246,18 +304,18 @@ def simulate_hos_trip(
         drive_time_since_break = 0.0
     elif duty_window_shift + 1.0 > 14.0:
         s_dt, e_dt = record_event(
-            STATUS_OFF_DUTY, 10.0, "10-Hour Shift Reset",
+            STATUS_SLEEPER, 10.0, "10-Hour Sleeper Berth Reset",
             f"Staging area at {pickup_location['name']}",
             lat=pickup_location.get("lat"), lng=pickup_location.get("lng")
         )
         stops.append({
             "type": "reset_10hr",
-            "location": f"10-Hr Reset (Pickup Facility)",
+            "location": f"10-Hr Sleeper Berth Reset (Pickup Facility)",
             "arrive": s_dt.isoformat(),
             "depart": e_dt.isoformat(),
             "lat": pickup_location.get("lat"),
             "lng": pickup_location.get("lng"),
-            "description": "10-hour off-duty reset before pickup"
+            "description": "10-hour sleeper berth reset before pickup"
         })
         drive_time_shift = 0.0
         duty_window_shift = 0.0
@@ -309,18 +367,18 @@ def simulate_hos_trip(
         drive_time_since_break = 0.0
     elif duty_window_shift + 1.0 > 14.0:
         s_dt, e_dt = record_event(
-            STATUS_OFF_DUTY, 10.0, "10-Hour Shift Reset",
+            STATUS_SLEEPER, 10.0, "10-Hour Sleeper Berth Reset",
             f"Staging area at {dropoff_location['name']}",
             lat=dropoff_location.get("lat"), lng=dropoff_location.get("lng")
         )
         stops.append({
             "type": "reset_10hr",
-            "location": f"10-Hr Reset (Dropoff Facility)",
+            "location": f"10-Hr Sleeper Berth Reset (Dropoff Facility)",
             "arrive": s_dt.isoformat(),
             "depart": e_dt.isoformat(),
             "lat": dropoff_location.get("lat"),
             "lng": dropoff_location.get("lng"),
-            "description": "10-hour off-duty reset before dropoff"
+            "description": "10-hour sleeper berth reset before dropoff"
         })
         drive_time_shift = 0.0
         duty_window_shift = 0.0
@@ -377,7 +435,7 @@ def simulate_hos_trip(
             "max_driving_shift": "11 hrs",
             "max_duty_window": "14 hrs",
             "rest_break_required": "30 min after 8 cumulative driving hrs",
-            "shift_reset_required": "10 consecutive hrs off-duty",
+            "shift_reset_required": "10 consecutive hrs sleeper berth",
             "cycle_restart": "34 consecutive hrs off-duty",
             "fuel_stop_interval": "Every 1,000 miles (30 min on-duty)",
             "pickup_dropoff_duty": "1.0 hr on-duty each"

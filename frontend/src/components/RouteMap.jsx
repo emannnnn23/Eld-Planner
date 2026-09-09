@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -68,6 +68,21 @@ function FitBounds({ geometry }) {
 }
 
 export default function RouteMap({ route, stops }) {
+  const [theme, setTheme] = useState(document.documentElement.getAttribute('data-theme') || 'dark');
+
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          setTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
+
   if (!route || !route.geometry || route.geometry.length === 0) {
     return (
       <div className="glass-card flex items-center justify-center" style={{ height: '450px' }}>
@@ -86,6 +101,10 @@ export default function RouteMap({ route, stops }) {
 
   const centerLat = route.geometry[0][0];
   const centerLng = route.geometry[0][1];
+  
+  const tileUrl = theme === 'light' 
+    ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 
   return (
     <div className="glass-card animate-fade-in-delay">
@@ -117,8 +136,9 @@ export default function RouteMap({ route, stops }) {
         className="map-container"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+          key={tileUrl}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          url={tileUrl}
         />
 
         <FitBounds geometry={route.geometry} />
@@ -137,16 +157,16 @@ export default function RouteMap({ route, stops }) {
             <Marker key={idx} position={[stop.lat, stop.lng]} icon={icon}>
               <Popup>
                 <div style={{ padding: '4px', minWidth: '220px' }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: '#111827', borderBottom: '1px solid #e5e7eb', paddingBottom: '6px', marginBottom: '6px' }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px', marginBottom: '6px' }}>
                     {typeLabel}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#4b5563', fontWeight: '500', marginBottom: '6px' }}>{stop.location}</div>
-                  <div style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.4' }}>
-                    <div>📅 <span style={{ fontWeight: '600', color: '#374151' }}>Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
-                    <div>🚀 <span style={{ fontWeight: '600', color: '#374151' }}>Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
+                  <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '6px' }}>{stop.location}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
+                    <div>📅 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
+                    <div>🚀 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
                   </div>
                   {stop.description && (
-                    <div style={{ fontSize: '11px', color: '#047857', fontWeight: '500', marginTop: '6px', background: '#ecfdf5', borderRadius: '4px', padding: '4px 8px' }}>
+                    <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: '500', marginTop: '6px', background: 'var(--accent-dim)', borderRadius: '4px', padding: '4px 8px' }}>
                       {stop.description}
                     </div>
                   )}
