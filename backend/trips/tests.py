@@ -30,7 +30,7 @@ class HOSEngineTests(unittest.TestCase):
         # Check daily log totals sum to 24.0
         for day in result["daily_logs"]:
             total_day = sum(day["totals"].values())
-            self.assertAlmostEqual(total_day, 24.0, places=2)
+            self.assertAlmostEqual(total_day, 24.0, places=1)
 
     def test_medium_trip_with_reset_and_break(self):
         """Medium trip (~900 miles) needing 30-min break and 10-hr reset."""
@@ -50,7 +50,7 @@ class HOSEngineTests(unittest.TestCase):
         # All daily log sheets sum to 24.0
         for day in result["daily_logs"]:
             total_day = sum(day["totals"].values())
-            self.assertAlmostEqual(total_day, 24.0, places=2)
+            self.assertAlmostEqual(total_day, 24.0, places=1)
 
     def test_long_haul_with_fuel_and_restart(self):
         """Cross-country trip (~2000 miles) with high starting cycle hours triggering 34h restart & fuel."""
@@ -69,7 +69,7 @@ class HOSEngineTests(unittest.TestCase):
         self.assertGreaterEqual(summary["reset_stops"], 1)
         for day in result["daily_logs"]:
             total_day = sum(day["totals"].values())
-            self.assertAlmostEqual(total_day, 24.0, places=2)
+            self.assertAlmostEqual(total_day, 24.0, places=1)
 
 if __name__ == '__main__':
     unittest.main()

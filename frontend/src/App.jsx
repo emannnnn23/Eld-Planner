@@ -75,10 +75,8 @@ export default function App() {
     }
   };
 
-  // Initial load trigger with default parameters
-  useEffect(() => {
-    handlePlanTrip(initialFormValues);
-  }, []);
+
+
 
   return (
     <div className="app-container">
