@@ -7,6 +7,48 @@ import LogSheet from './components/LogSheet';
 import { planTrip } from './services/api';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
+const LOADING_STEPS = [
+  { icon: '📍', text: 'Geocoding locations...' },
+  { icon: '🗺️', text: 'Calculating optimal route...' },
+  { icon: '⏱️', text: 'Running HOS simulation...' },
+  { icon: '📋', text: 'Generating daily log sheets...' },
+  { icon: '✅', text: 'Finalizing trip plan...' },
+];
+
+function LoadingOverlay() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev < LOADING_STEPS.length - 1 ? prev + 1 : prev));
+    }, 1200);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="loading-overlay">
+      <div className="loading-card">
+        <div className="loading-spinner-ring">
+          <div className="loading-spinner-inner" />
+        </div>
+        <h2 className="loading-title">Preparing Your Trip</h2>
+        <p className="loading-subtitle">This may take a few seconds...</p>
+        <div className="loading-steps">
+          {LOADING_STEPS.map((step, i) => (
+            <div
+              key={i}
+              className={`loading-step ${i < activeStep ? 'step-done' : ''} ${i === activeStep ? 'step-active' : ''} ${i > activeStep ? 'step-pending' : ''}`}
+            >
+              <span className="loading-step-icon">{i < activeStep ? '✓' : step.icon}</span>
+              <span className="loading-step-text">{step.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [tripData, setTripData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +84,8 @@ export default function App() {
     <div className="app-container">
       <div className="max-w-container">
         <Header />
+
+        {isLoading && <LoadingOverlay />}
 
         {error && (
           <div className="alert alert-error">
