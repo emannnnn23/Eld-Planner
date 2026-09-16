@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Map, Navigation } from 'lucide-react';
+import { Map, Navigation, Calendar, Send, Play, Package, Fuel, Coffee, Bed, RotateCcw, Flag } from 'lucide-react';
+import { renderToString } from 'react-dom/server';
 
-const createCustomIcon = (color, label) => {
+const createCustomIcon = (color, IconComponent) => {
+  const iconHtml = renderToString(<IconComponent size={16} color="#ffffff" />);
+  
   return L.divIcon({
     className: 'custom-map-marker',
     html: `
@@ -18,12 +21,8 @@ const createCustomIcon = (color, label) => {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
-        font-weight: bold;
-        font-size: 12px;
-        font-family: 'Inter', sans-serif;
       ">
-        ${label}
+        ${iconHtml}
       </div>
     `,
     iconSize: [30, 30],
@@ -33,13 +32,13 @@ const createCustomIcon = (color, label) => {
 };
 
 const icons = {
-  start: createCustomIcon('#10b981', '📍'),
-  pickup: createCustomIcon('#06b6d4', '📦'),
-  fuel: createCustomIcon('#f59e0b', '⛽'),
-  break_30min: createCustomIcon('#3b82f6', '☕'),
-  reset_10hr: createCustomIcon('#8b5cf6', '🛏️'),
-  restart_34hr: createCustomIcon('#ec4899', '🔄'),
-  dropoff: createCustomIcon('#10b981', '🏁')
+  start: createCustomIcon('#10b981', Play),
+  pickup: createCustomIcon('#06b6d4', Package),
+  fuel: createCustomIcon('#f59e0b', Fuel),
+  break_30min: createCustomIcon('#3b82f6', Coffee),
+  reset_10hr: createCustomIcon('#8b5cf6', Bed),
+  restart_34hr: createCustomIcon('#ec4899', RotateCcw),
+  dropoff: createCustomIcon('#10b981', Flag)
 };
 
 const stopTypeLabels = {
@@ -162,8 +161,8 @@ export default function RouteMap({ route, stops }) {
                   </div>
                   <div style={{ fontSize: '12px', fontWeight: '500', marginBottom: '6px' }}>{stop.location}</div>
                   <div style={{ fontSize: '11px', color: 'var(--text-dim)', lineHeight: '1.4' }}>
-                    <div>📅 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
-                    <div>🚀 <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Arrive:</span> {new Date(stop.arrive).toLocaleString()}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ fontWeight: '600', color: 'var(--text-main)' }}>Depart:</span> {new Date(stop.depart).toLocaleString()}</div>
                   </div>
                   {stop.description && (
                     <div style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: '500', marginTop: '6px', background: 'var(--accent-dim)', borderRadius: '4px', padding: '4px 8px' }}>

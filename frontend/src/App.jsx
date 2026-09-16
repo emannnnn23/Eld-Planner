@@ -5,14 +5,14 @@ import TripSummary from './components/TripSummary';
 import RouteMap from './components/RouteMap';
 import LogSheet from './components/LogSheet';
 import { planTrip } from './services/api';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, MapPin, Route, Timer, ClipboardList, CheckCircle2, Check } from 'lucide-react';
 
 const LOADING_STEPS = [
-  { icon: '📍', text: 'Geocoding locations...' },
-  { icon: '🗺️', text: 'Calculating optimal route...' },
-  { icon: '⏱️', text: 'Running HOS simulation...' },
-  { icon: '📋', text: 'Generating daily log sheets...' },
-  { icon: '✅', text: 'Finalizing trip plan...' },
+  { icon: MapPin, text: 'Geocoding locations...' },
+  { icon: Route, text: 'Calculating optimal route...' },
+  { icon: Timer, text: 'Running HOS simulation...' },
+  { icon: ClipboardList, text: 'Generating daily log sheets...' },
+  { icon: CheckCircle2, text: 'Finalizing trip plan...' },
 ];
 
 function LoadingOverlay() {
@@ -39,7 +39,7 @@ function LoadingOverlay() {
               key={i}
               className={`loading-step ${i < activeStep ? 'step-done' : ''} ${i === activeStep ? 'step-active' : ''} ${i > activeStep ? 'step-pending' : ''}`}
             >
-              <span className="loading-step-icon">{i < activeStep ? '✓' : step.icon}</span>
+              <span className="loading-step-icon">{i < activeStep ? <Check size={16} /> : <step.icon size={16} />}</span>
               <span className="loading-step-text">{step.text}</span>
             </div>
           ))}

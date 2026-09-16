@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Clock, Play, AlertTriangle, Zap, ArrowDown, HelpCircle } from 'lucide-react';
+import { MapPin, Clock, Play, AlertTriangle, Zap, ArrowDown, HelpCircle, Truck, Package, Flag } from 'lucide-react';
 
 export default function TripForm({ onSubmit, isLoading, initialValues }) {
   const [currentLocation, setCurrentLocation] = useState(initialValues?.current_location || 'Chicago, IL');
@@ -49,21 +49,21 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
             className="btn-preset"
             onClick={() => applyPreset('Chicago, IL', 'Indianapolis, IN', 'Columbus, OH', 12.0)}
           >
-            🚐 Short Trip (~350 mi)
+            <Truck size={14} /> Short Trip (~350 mi)
           </button>
           <button
             type="button"
             className="btn-preset"
             onClick={() => applyPreset('Atlanta, GA', 'Nashville, TN', 'Dallas, TX', 24.5)}
           >
-            🚛 Medium Trip (~850 mi)
+            <Truck size={14} /> Medium Trip (~850 mi)
           </button>
           <button
             type="button"
             className="btn-preset"
             onClick={() => applyPreset('Chicago, IL', 'St. Louis, MO', 'Los Angeles, CA', 62.0)}
           >
-            🏗️ Long Haul (2,000+ mi)
+            <Truck size={14} /> Long Haul (2,000+ mi)
           </button>
         </div>
       </div>
@@ -76,7 +76,7 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
           {/* Current Location */}
           <div>
             <label className="form-label">
-              📍 Where are you now?
+              <MapPin size={14} className="text-accent" /> Where are you now?
             </label>
             <input
               type="text"
@@ -99,7 +99,7 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
           {/* Pickup */}
           <div>
             <label className="form-label">
-              📦 Pickup Location
+              <Package size={14} className="text-accent" /> Pickup Location
             </label>
             <input
               type="text"
@@ -122,7 +122,7 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
           {/* Dropoff */}
           <div>
             <label className="form-label">
-              🏁 Dropoff Location
+              <Flag size={14} className="text-accent" /> Dropoff Location
             </label>
             <input
               type="text"
@@ -191,7 +191,7 @@ export default function TripForm({ onSubmit, isLoading, initialValues }) {
         {/* Start Time */}
         <div>
           <label className="form-label">
-            🕐 When do you want to depart?
+            <Clock size={14} className="text-accent" /> When do you want to depart?
           </label>
           <input
             type="datetime-local"
