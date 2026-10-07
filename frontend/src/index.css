@@ -693,3 +693,7 @@ input[type=range]::-webkit-slider-runnable-track {
 .step-pending {
   opacity: 0.35;
 }
+
+.map-tiles-dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+}
