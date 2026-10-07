@@ -5,6 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import { Map, Navigation, Calendar, Send, Play, Package, Fuel, Coffee, Bed, RotateCcw, Flag } from 'lucide-react';
 import { renderToString } from 'react-dom/server';
 
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
+const MAPTILER_STYLE = 'openstreetmap';
+
 const createCustomIcon = (color, IconComponent) => {
   const iconHtml = renderToString(<IconComponent size={16} color="#ffffff" />);
   
@@ -101,8 +104,14 @@ export default function RouteMap({ route, stops }) {
   const centerLat = route.geometry[0][0];
   const centerLng = route.geometry[0][1];
   
-  // OpenStreetMap tiles need no API key; dark mode is applied via CSS filter
-  const tileUrl = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  // MapTiler tiles when a key is configured, otherwise fall back to keyless OSM tiles.
+  // Dark mode is applied to either via CSS filter.
+  const tileUrl = MAPTILER_KEY
+    ? `https://api.maptiler.com/maps/${MAPTILER_STYLE}/256/{z}/{x}/{y}.jpg?key=${MAPTILER_KEY}`
+    : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const attribution = MAPTILER_KEY
+    ? '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   return (
     <div className="glass-card animate-fade-in-delay">
@@ -135,7 +144,7 @@ export default function RouteMap({ route, stops }) {
       >
         <TileLayer
           key={theme}
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution={attribution}
           url={tileUrl}
           maxZoom={19}
           className={theme === 'light' ? '' : 'map-tiles-dark'}
