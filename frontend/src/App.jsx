@@ -4,6 +4,7 @@ import TripForm from './components/TripForm';
 import TripSummary from './components/TripSummary';
 import RouteMap from './components/RouteMap';
 import LogSheet from './components/LogSheet';
+import Landing from './components/Landing';
 import { planTrip } from './services/api';
 import { AlertCircle, RefreshCw, MapPin, Route, Timer, ClipboardList, CheckCircle2, Check } from 'lucide-react';
 
@@ -49,7 +50,29 @@ function LoadingOverlay() {
   );
 }
 
+const PLANNER_HASH = '#plan';
+
+function useView() {
+  const read = () => (window.location.hash === PLANNER_HASH ? 'planner' : 'landing');
+  const [view, setView] = useState(read);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = read();
+      setView((prev) => {
+        if (prev !== next) window.scrollTo(0, 0);
+        return next;
+      });
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  return view;
+}
+
 export default function App() {
+  const view = useView();
   const [tripData, setTripData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -77,6 +100,14 @@ export default function App() {
 
 
 
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('app-theme') || 'dark');
+  }, []);
+
+  if (view === 'landing') {
+    return <Landing onStart={() => { window.location.hash = PLANNER_HASH; }} />;
+  }
 
   return (
     <div className="app-container">

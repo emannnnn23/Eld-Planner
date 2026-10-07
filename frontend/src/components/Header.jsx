@@ -25,7 +25,7 @@ export default function Header() {
 
   return (
     <header className="glass-card mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div className="flex items-center gap-4">
+      <a href="#" className="flex items-center gap-4" style={{ color: 'inherit', textDecoration: 'none' }} title="Back to home">
         <div className="icon-container">
           <Truck className="w-full h-full p-2" />
         </div>
@@ -37,7 +37,7 @@ export default function Header() {
             Enter your route — get optimized stops and compliant daily log sheets automatically.
           </p>
         </div>
-      </div>
+      </a>
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
